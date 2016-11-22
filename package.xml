@@ -13,5 +13,5 @@
   
   <depend>cmake_modules</depend>
   <depend>eigen_catkin</depend>
-  <depend>opencv2_catkin</depend>
+  <depend>opencv3_catkin</depend>
 </package>

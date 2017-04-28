@@ -5,6 +5,7 @@ find_package(catkin_simple REQUIRED)
 catkin_simple(ALL_DEPS_REQUIRED)
 
 add_definitions("-fPIC -O3")
+find_package( Threads )
 
 if ("!${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   # The clang compiler (on osx) is somehow much more strict
@@ -21,7 +22,7 @@ file(GLOB SOURCE_FILES "src/*.cc")
 cs_add_library(${PROJECT_NAME}
   ${SOURCE_FILES}
 )
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
 ############
 # EXAMPLES #

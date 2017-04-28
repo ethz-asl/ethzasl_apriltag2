@@ -5,7 +5,7 @@ find_package(catkin_simple REQUIRED)
 catkin_simple(ALL_DEPS_REQUIRED)
 
 add_definitions("-fPIC -O3")
-find_package( Threads )
+find_package(Threads)
 
 if ("!${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   # The clang compiler (on osx) is somehow much more strict

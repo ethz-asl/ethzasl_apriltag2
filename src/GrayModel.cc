@@ -65,7 +65,6 @@ void GrayModel::compute() {
       v = Ainv * b;
       return;
     }
-    std::cerr << "AprilTags::GrayModel::compute() has underflow in matrix inverse\n";
     //    }
     //    catch (std::underflow_error&) {
     //      std::cerr << "AprilTags::GrayModel::compute() has underflow in matrix inverse\n";

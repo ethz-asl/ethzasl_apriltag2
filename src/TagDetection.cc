@@ -4,6 +4,7 @@
 #include "apriltags/TagDetection.h"
 #include "apriltags/MathUtil.h"
 
+
 #ifdef PLATFORM_APERIOS
 //missing/broken isnan
 namespace std {
@@ -73,6 +74,54 @@ bool TagDetection::overlapsTooMuch(const TagDetection &other) const {
   return ( dist < radius );
 }
 
+aslam::Transformation TagDetection::getRelativeTransform(
+    const aslam::NCamera::ConstPtr& ncameras,
+    double tag_size, size_t cam_idx) const {
+  opengv::sac::Ransac<
+      opengv::sac_problems::absolute_pose::AbsolutePoseSacProblem>
+      ransac;
+
+  // 3D tag points
+  double s = tag_size / 2.0;
+  opengv::points_t points;
+  points.push_back(opengv::point_t(-s, -s, 0));
+  points.push_back(opengv::point_t(s, -s, 0));
+  points.push_back(opengv::point_t(s, s, 0));
+  points.push_back(opengv::point_t(-s, s, 0));
+
+  // 2D image points
+  opengv::bearingVectors_t bearing_vectors;
+  for (size_t i = 0u; i < 4; ++i) {
+    Eigen::Vector3d xyz;
+    ncameras->getCamera(cam_idx).backProject3(
+        Eigen::Vector2d(p[i].first, p[i].second), &xyz);
+    bearing_vectors.push_back(
+        opengv::bearingVector_t(xyz(0), xyz(1), xyz(2)).normalized());
+  }
+  opengv::absolute_pose::CentralAbsoluteAdapter adapter(bearing_vectors,
+                                                        points);
+  std::shared_ptr<opengv::sac_problems::absolute_pose::AbsolutePoseSacProblem>
+      absposeproblem_ptr(
+          new opengv::sac_problems::absolute_pose::AbsolutePoseSacProblem(
+              adapter, opengv::sac_problems::absolute_pose::
+                           AbsolutePoseSacProblem::KNEIP));
+  ransac.sac_model_ = absposeproblem_ptr;
+  ransac.threshold_ = 0.1;
+  ransac.max_iterations_ = 100;
+  ransac.computeModel();
+
+  // Not sure if RANSAC and nonlinear refinement is really desired here..
+  Eigen::Matrix<double, 3, 4> final_model = ransac.model_coefficients_;
+  absposeproblem_ptr->optimizeModelCoefficients(
+      ransac.inliers_, ransac.model_coefficients_, final_model);
+
+  const Eigen::Matrix3d R = final_model.leftCols(3);
+  aslam::Transformation T(Eigen::Quaterniond(R).normalized(),
+                          final_model.rightCols(1));
+
+  return T;
+}
+
 Eigen::Matrix4d TagDetection::getRelativeTransform(double tag_size, double fx, double fy, double px, double py) const {
   std::vector<cv::Point3f> objPts;
   std::vector<cv::Point2f> imgPts;
@@ -103,7 +152,7 @@ Eigen::Matrix4d TagDetection::getRelativeTransform(double tag_size, double fx, d
   Eigen::Matrix3d wRo;
   wRo << r(0,0), r(0,1), r(0,2), r(1,0), r(1,1), r(1,2), r(2,0), r(2,1), r(2,2);
 
-  Eigen::Matrix4d T; 
+  Eigen::Matrix4d T;
   T.topLeftCorner(3,3) = wRo;
   T.col(3).head(3) << tvec.at<double>(0), tvec.at<double>(1), tvec.at<double>(2);
   T.row(3) << 0,0,0,1;

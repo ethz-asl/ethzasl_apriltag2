@@ -54,6 +54,8 @@
 
 #pragma once
 
+#include <apriltags/TagDetector.h>
+
 namespace AprilTags {
 
 const unsigned long long t36h11[] =

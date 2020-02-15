@@ -31,6 +31,8 @@
 
 #pragma once
 
+#include "TagFamily.h"
+
 namespace AprilTags {
 
 const unsigned long long t16h5[] =

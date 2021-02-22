@@ -1,12 +1,18 @@
 #ifndef TAGDETECTION_H
 #define TAGDETECTION_H
 
-#include <Eigen/Dense>
-
-#include "opencv2/opencv.hpp"
-
 #include <utility>
 #include <vector>
+
+#include <aslam/cameras/ncamera.h>
+#include <aslam/cameras/camera-pinhole.h>
+#include <Eigen/Dense>
+#include <opencv2/opencv.hpp>
+#include <opengv/absolute_pose/CentralAbsoluteAdapter.hpp>
+#include <opengv/absolute_pose/methods.hpp>
+#include <opengv/sac/Ransac.hpp>
+#include <opengv/sac_problems/absolute_pose/AbsolutePoseSacProblem.hpp>
+
 
 namespace AprilTags {
 
@@ -80,6 +86,11 @@ struct TagDetection {
   */
   Eigen::Matrix4d getRelativeTransform(double tag_size, double fx, double fy,
                                        double px, double py) const;
+
+  //! Returns the camera pose relative to the tag coordinate system.
+  aslam::Transformation getRelativeTransform(
+          const aslam::NCamera::ConstPtr& ncameras, double tag_size,
+          size_t cam_idx) const;
 
   //! Recover rotation matrix and translation vector of April tag relative to camera.
   // Result is in object frame (x forward, y left, z up)

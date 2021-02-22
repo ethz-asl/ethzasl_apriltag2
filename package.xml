@@ -11,7 +11,11 @@
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>catkin_simple</buildtool_depend>
   
+  <depend>aslam_cv_cameras</depend>
+  <depend>aslam_cv_frames</depend>
   <depend>cmake_modules</depend>
   <depend>eigen_catkin</depend>
   <depend>opencv3_catkin</depend>
+  <depend>opengv</depend>
+
 </package>

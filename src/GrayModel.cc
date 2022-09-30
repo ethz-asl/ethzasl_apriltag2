@@ -52,17 +52,14 @@ void GrayModel::compute() {
   if (nobs >= 6) {
     // make symmetric
     Eigen::Matrix4d Ainv;
-    for (int i = 0; i < 4; i++)
-      for (int j = i+1; j < 4; j++)
-        A(j,i) = A(i,j);
+    A = A.selfadjointView<Eigen::Upper>();
 
     //    try {
     //      Ainv = A.inverse();
     bool invertible;
-    double det_unused;
-    A.computeInverseAndDetWithCheck(Ainv, det_unused, invertible);
+    A.computeInverseWithCheck(Ainv, invertible);
     if (invertible) {
-      v = Ainv * b;
+      v = A.ldlt().solve(b);
       return;
     }
     //    }
